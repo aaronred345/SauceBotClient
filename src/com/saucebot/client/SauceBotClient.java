@@ -24,14 +24,14 @@ public class SauceBotClient implements ChannelListListener {
         Channel channel = new Channel(channelName, account);
     }
 
-	@Override
-	public void channelAdded(Channel channel) {
-		
-	}
+    @Override
+    public void channelAdded(final Channel channel) {
 
-	@Override
-	public void channelRemoved(Channel channel) {
-		
-	}
+    }
+
+    @Override
+    public void channelRemoved(final Channel channel) {
+
+    }
 
 }

@@ -1,13 +1,12 @@
 package com.saucebot.twitch;
 
-import com.saucebot.client.Channel;
 
 public class Twitch {
 
     public static final int CHAT_PORT = 6667;
 
-    public static String getAddressForChannel(final Channel channel) {
-        return channel.getIdentifier() + ".jtvirc.com";
+    public static String getAddressForChannel(final String channelName) {
+        return channelName.toLowerCase() + ".jtvirc.com";
     }
 
     public static boolean isTwitchPM(final String username) {

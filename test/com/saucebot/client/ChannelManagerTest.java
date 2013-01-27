@@ -16,13 +16,11 @@ public class ChannelManagerTest {
         manager.setChannelListListener(new ChannelListListener() {
 
             @Override
-            public void channelAdded(Channel channel) {
-                System.out.println("Added: " + channel);
+            public void channelAdded(final Channel channel) {
             }
 
             @Override
-            public void channelRemoved(Channel channel) {
-                System.out.println("Removed: " + channel);
+            public void channelRemoved(final Channel channel) {
 
             }
 
