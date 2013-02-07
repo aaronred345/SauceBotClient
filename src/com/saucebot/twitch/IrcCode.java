@@ -126,11 +126,16 @@ public enum IrcCode {
     Nooperhost("491", true),
     Umodeunknownflag("501", true),
     Usersdontmatch("502", true),
+    Connected("001"),
+    Hostinfo("002"),
+    Serverinfo("003"),
     Myinfo("004"),
     Isupport("005"),
 
     Privmsg("PRIVMSG"),
     Mode("MODE"),
+    Join("JOIN"),
+    Part("PART"),
     Ping("PING"),
 
     Unknown("000");
