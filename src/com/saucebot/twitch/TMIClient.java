@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.saucebot.net.Connection;
 import com.saucebot.net.ConnectionListener;
+import com.saucebot.util.IRCUtils;
 
 public class TMIClient implements ConnectionListener {
 
@@ -26,6 +27,11 @@ public class TMIClient implements ConnectionListener {
 
         connection = new Connection(Twitch.getAddressForChannel(channelName), Twitch.CHAT_PORT);
         connection.setConnectionListener(this);
+        connection.connect();
+    }
+
+    public void close() {
+        connection.close();
     }
 
     public String getChannelName() {
@@ -42,7 +48,13 @@ public class TMIClient implements ConnectionListener {
 
     @Override
     public void onConnected() {
+        send("PASS", this.accountPassword);
+        send("NICK", this.accountName);
+        send("USER", this.accountName, 8, '*', this.accountName);
 
+        send("JOIN", '#' + this.channelName);
+        send("JTVROOMS", '#' + this.channelName);
+        send("JTVCLIENT", '#' + this.channelName);
     }
 
     @Override
@@ -55,10 +67,21 @@ public class TMIClient implements ConnectionListener {
         Message message = Message.parse(line);
         switch (message.getType()) {
         case Privmsg:
-            String channel = message.getArg(1);
-            String text = message.getArg(2);
-            System.out.println(channel + ": " + text);
+            String channel = message.getArg(0);
+            String user = message.getUser();
+            String text = message.getArg(1);
+            System.out.printf("%s <%s> %s\n", channel, user, text);
+        default:
+            System.out.println(message.getType().name() + ": " + message);
         }
+    }
+
+    private void send(final String code, final Object... args) {
+        connection.send(IRCUtils.format(code, args));
+    }
+
+    public void sendMessage(final String line) {
+        send("PRIVMSG", '#' + this.channelName, line);
     }
 
 }

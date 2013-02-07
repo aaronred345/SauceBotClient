@@ -79,10 +79,10 @@ public class AutoSocket implements Runnable {
     private void connect() throws UnknownHostException, IOException {
         socket = new Socket(host, port);
 
-        listener.onSocketConnected(socket);
         new SocketReader(socket, listener);
-
         writer = new PrintWriter(socket.getOutputStream(), true);
+        
+        listener.onSocketConnected(socket);
     }
 
     private void tickRetryer() {

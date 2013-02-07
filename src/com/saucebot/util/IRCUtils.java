@@ -16,7 +16,11 @@ public class IRCUtils {
 
         String last = args[num - 1].toString().replaceAll("\\s+", " ");
 
-        return builder.append(" :").append(last).append('\r').toString();
+        if (last.length() == 0 || last.indexOf(' ') == -1 || last.charAt(0) == ':') {
+            return builder.append(' ').append(last).append('\r').toString();
+        } else {
+            return builder.append(" :").append(last).append('\r').toString();
+        }
     }
 
     public static String[] parse(final String line) {

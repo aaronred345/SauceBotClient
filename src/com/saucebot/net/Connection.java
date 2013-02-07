@@ -29,6 +29,12 @@ public class Connection implements SocketListener {
         socket = new AutoSocket(host, port, this);
     }
 
+    public void close() {
+        if (socket != null) {
+            socket.close();
+        }
+    }
+
     @Override
     public void onMessageReceived(final String line) {
         listener.onMessageReceived(line);
@@ -45,6 +51,7 @@ public class Connection implements SocketListener {
     }
 
     public void send(final String message) {
+        System.out.print(">>> " + message);
         socket.write(message);
     }
 
