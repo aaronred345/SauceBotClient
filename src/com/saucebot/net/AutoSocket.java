@@ -54,7 +54,6 @@ public class AutoSocket implements Runnable {
         if (socket == null || socket.isClosed()) {
             attemptReconnect();
         } else {
-            System.out.print(".");
             sleep();
         }
     }
@@ -81,7 +80,7 @@ public class AutoSocket implements Runnable {
 
         new SocketReader(socket, listener);
         writer = new PrintWriter(socket.getOutputStream(), true);
-        
+
         listener.onSocketConnected(socket);
     }
 

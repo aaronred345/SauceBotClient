@@ -1,6 +1,5 @@
 package com.saucebot.twitch;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +46,10 @@ public class TMIClient implements ConnectionListener {
         for (Method method : getClass().getMethods()) {
             IrcHandler handlerAnnotation = method.getAnnotation(IrcHandler.class);
             if (handlerAnnotation != null) {
-                codeHandlers.put(handlerAnnotation.value(), method);
+                IrcCode code = handlerAnnotation.value();
+                if (codeHandlers.put(code, method) != null) {
+                    throw new IllegalStateException("Multiple handlers for " + code);
+                }
             }
         }
 
@@ -110,12 +112,10 @@ public class TMIClient implements ConnectionListener {
     }
 
     @IrcHandler(IrcCode.Privmsg)
-    public void handlePrivmsg(final IrcMessage message) {
-        String channel = message.getArg(0);
+    public void handlePrivmsg(final IrcMessage message, final String channel, final String text) {
         String username = message.getUser();
-        String text = message.getArg(1);
 
-        if ("jtv".equals(username)) {
+        if (Twitch.SYSTEM_MESSAGE_USER.equals(username)) {
             handleSystemMessage(text);
             return;
         }
@@ -132,15 +132,27 @@ public class TMIClient implements ConnectionListener {
         SystemMessage message = SystemMessage.parse(line);
         if (message.getType().isSystem()) {
             processMessage(message);
+        } else {
+            System.out.println("PM: " + message);
+        }
+    }
+
+    @IrcHandler(IrcCode.Specialuser)
+    public void handleSpecialuser(final SystemMessage message, final String username, final String type) {
+        SpecialUserType specialUserType = SpecialUserType.valueOf(type);
+        if (!specialUserType.isChannelSpecific()) {
+            Users.get(username).addSpecialUserType(specialUserType);
         }
     }
 
     @IrcHandler(IrcCode.Usercolor)
-    public void handleUsercolor(final SystemMessage message) {
-        String username = message.getArg(0);
-        String color = message.getArg(1);
-
+    public void handleUsercolor(final SystemMessage message, final String username, final String color) {
         Users.get(username).setColor(color);
+    }
+
+    @IrcHandler(IrcCode.Emoteset)
+    public void handleEmoteset(final SystemMessage message, final String username, final String emoteset) {
+
     }
 
     @IrcHandler(IrcCode.Join)
@@ -152,17 +164,16 @@ public class TMIClient implements ConnectionListener {
     }
 
     @IrcHandler(IrcCode.Mode)
-    public void handleMode(final IrcMessage message) {
-        String mode = message.getArg(1);
-
+    public void handleMode(final IrcMessage message, final String channel, final String mode, final String target) {
+        System.out.printf("MODE[%s] on %s\n", mode, target);
         switch (mode) {
 
         case "+o": // op
-            addOp(Users.get(message.getArg(2)));
+            addOp(Users.get(target));
             break;
 
         case "-o": // deop
-            removeOp(Users.get(message.getArg(2)));
+            removeOp(Users.get(target));
             break;
 
         default:
@@ -171,7 +182,7 @@ public class TMIClient implements ConnectionListener {
     }
 
     @IrcHandler(IrcCode.Ping)
-    public void handlePing(final IrcMessage message) {
+    public void handlePing() {
         sendRaw("PONG");
     }
 
@@ -199,10 +210,31 @@ public class TMIClient implements ConnectionListener {
 
     private void invokeHandlerMethod(final Message message, final Method method) {
         try {
-            method.invoke(this, message);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            System.err.println("Error invoking handler method: " + e);
+            Class<?>[] parameters = method.getParameterTypes();
+            if (parameters.length == 0) {
+                method.invoke(this);
+            } else if (parameters.length == 1) {
+                method.invoke(this, message);
+            } else {
+                invokeMethodWithParameters(message, method, parameters.length);
+            }
+        } catch (Exception e) {
+            System.err.println("Error invoking handler method: " + e + " for " + message);
         }
+    }
+
+    private void invokeMethodWithParameters(final Message message, final Method method, final int numParameters)
+            throws Exception {
+        Object[] parameters = new Object[numParameters];
+        parameters[0] = message;
+
+        int numExtraParameters = Math.min(numParameters - 1, message.getNumArgs());
+
+        for (int i = 0; i < numExtraParameters; i++) {
+            parameters[i + 1] = message.getArg(i);
+        }
+
+        method.invoke(this, parameters);
     }
 
     private void send(final String code, final Object... args) {
