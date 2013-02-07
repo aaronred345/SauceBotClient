@@ -1,10 +1,11 @@
-package com.saucebot.twitch;
+package com.saucebot.twitch.message;
 
+import com.saucebot.util.ArrayUtils;
 import com.saucebot.util.IRCUtils;
 
-public class Message {
+public class IrcMessage implements Message {
 
-    private static final Message NullMessage = new Message(null, "", IrcCode.Unknown, "", new String[0]);
+    private static final IrcMessage NullMessage = new IrcMessage(null, "", IrcCode.Unknown, "", new String[0]);
 
     private final String sender;
     private final String user;
@@ -13,7 +14,7 @@ public class Message {
     private final String raw;
     private final String[] arguments;
 
-    private Message(final String sender, final String command, final IrcCode type, final String raw,
+    private IrcMessage(final String sender, final String command, final IrcCode type, final String raw,
             final String[] arguments) {
         this.sender = sender;
         this.command = command;
@@ -41,6 +42,7 @@ public class Message {
         return user;
     }
 
+    @Override
     public IrcCode getType() {
         return type;
     }
@@ -49,23 +51,27 @@ public class Message {
         return command;
     }
 
+    @Override
     public int getNumArgs() {
         return arguments.length;
     }
 
+    @Override
     public String getArg(final int index) {
         return arguments[index];
     }
 
+    @Override
     public String[] getArgs() {
         return arguments;
     }
 
+    @Override
     public String getRawLine() {
         return raw;
     }
 
-    public static Message parse(final String line) {
+    public static IrcMessage parse(final String line) {
         String[] parts = IRCUtils.parse(line);
         if (parts.length == 0 || parts[0].isEmpty()) {
             return NullMessage;
@@ -85,19 +91,10 @@ public class Message {
             command = parts[0];
         }
 
-        String[] params = slice(parts, paramStart);
+        String[] params = ArrayUtils.slice(parts, paramStart);
 
         code = IrcCode.getForCode(command);
-        return new Message(sender, command, code, line, params);
-    }
-
-    private static String[] slice(final String[] array, final int startIndex) {
-        int length = array.length;
-        String[] spliced = new String[length - startIndex];
-        for (int i = startIndex; i < length; i++) {
-            spliced[i - startIndex] = array[i];
-        }
-        return spliced;
+        return new IrcMessage(sender, command, code, line, params);
     }
 
     @Override

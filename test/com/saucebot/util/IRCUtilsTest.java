@@ -12,7 +12,7 @@ public class IRCUtilsTest {
         assertEquals("\r", IRCUtils.format(""));
         assertEquals("TEST\r", IRCUtils.format("TEST"));
 
-        assertEquals("Hello :world!\r", IRCUtils.format("Hello", "world!"));
+        assertEquals("Hello world!\r", IRCUtils.format("Hello", "world!"));
         assertEquals("PRIVMSG #ravn :Hello there everyone. :-)\r",
                 IRCUtils.format("PRIVMSG", "#ravn", "Hello there everyone. :-)"));
 
@@ -34,6 +34,14 @@ public class IRCUtilsTest {
         arrayEquals(IRCUtils.parse("PRIVMSG #ravn :Hello world:!"), "PRIVMSG", "#ravn", "Hello world:!");
         arrayEquals(IRCUtils.parse("A B C :"), "A", "B", "C", "");
         arrayEquals(IRCUtils.parse("A B C ::"), "A", "B", "C", ":");
+    }
+
+    @Test
+    public void testParseBasic() {
+        arrayEquals(IRCUtils.parse(""));
+        arrayEquals(IRCUtils.parse("a"), "a");
+        arrayEquals(IRCUtils.parse("a #b c"), "a", "#b", "c");
+        arrayEquals(IRCUtils.parse("USERCOLOR ravn_tm firebrick"), "USERCOLOR", "ravn_tm", "firebrick");
     }
 
     private void arrayEquals(final String[] actual, final String... expected) {

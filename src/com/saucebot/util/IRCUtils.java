@@ -16,7 +16,7 @@ public class IRCUtils {
 
         String last = args[num - 1].toString().replaceAll("\\s+", " ");
 
-        if (last.length() == 0 || last.indexOf(' ') == -1 || last.charAt(0) == ':') {
+        if (last.length() == 0 || (last.indexOf(' ') == -1 && last.charAt(0) != ':')) {
             return builder.append(' ').append(last).append('\r').toString();
         } else {
             return builder.append(" :").append(last).append('\r').toString();
@@ -43,5 +43,13 @@ public class IRCUtils {
             fullList[preList.length] = post;
             return fullList;
         }
+    }
+
+    public static String[] parseBasic(final String line) {
+        String message = line.trim();
+        if (message.isEmpty()) {
+            return new String[0];
+        }
+        return message.split(" ");
     }
 }

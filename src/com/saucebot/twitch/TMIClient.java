@@ -9,6 +9,10 @@ import java.util.Set;
 
 import com.saucebot.net.Connection;
 import com.saucebot.net.ConnectionListener;
+import com.saucebot.twitch.message.IrcCode;
+import com.saucebot.twitch.message.IrcMessage;
+import com.saucebot.twitch.message.Message;
+import com.saucebot.twitch.message.SystemMessage;
 import com.saucebot.util.IRCUtils;
 
 public class TMIClient implements ConnectionListener {
@@ -84,15 +88,11 @@ public class TMIClient implements ConnectionListener {
     @Override
     public void onConnected() {
         String name = getUsername();
-        String chan = getIrcChannelName();
 
         send("PASS", this.accountPassword);
         send("NICK", name);
         send("USER", name, 8, '*', name);
 
-        send("JOIN", chan);
-        send("JTVROOMS", chan);
-        send("JTVCLIENT", chan);
     }
 
     @Override
@@ -100,16 +100,51 @@ public class TMIClient implements ConnectionListener {
 
     }
 
+    @IrcHandler(IrcCode.Endofmotd)
+    public void handleEndofmotd(final IrcMessage message) {
+        String chan = getIrcChannelName();
+
+        send("JOIN", chan);
+        send("JTVROOMS", chan);
+        send("JTVCLIENT", chan);
+    }
+
     @IrcHandler(IrcCode.Privmsg)
-    public void handlePrivmsg(final Message message) {
+    public void handlePrivmsg(final IrcMessage message) {
         String channel = message.getArg(0);
-        String user = message.getUser();
+        String username = message.getUser();
         String text = message.getArg(1);
-        System.out.printf("%s <%s> %s\n", channel, user, text);
+
+        if ("jtv".equals(username)) {
+            handleSystemMessage(text);
+            return;
+        }
+
+        User user = Users.get(username);
+        if (isOp(user)) {
+            username = '@' + username;
+        }
+
+        System.out.printf("%s %s <%s> %s\n", channel, user.getColor(), username, text);
+    }
+
+    private void handleSystemMessage(final String line) {
+        SystemMessage message = SystemMessage.parse(line);
+        if (message.getType().isSystem()) {
+            processMessage(message);
+        }
+    }
+
+    @IrcHandler(IrcCode.Usercolor)
+    public void handleUsercolor(final SystemMessage message) {
+        String username = message.getArg(0);
+        String color = message.getArg(1);
+
+        Users.get(username).setColor(color);
     }
 
     @IrcHandler(IrcCode.Join)
-    public void handleJoin(final Message message) {
+    public void handleJoin(final IrcMessage message) {
         String user = message.getUser();
         if (user.equalsIgnoreCase(this.accountName)) {
             send("WHO", '#' + this.channelName);
@@ -117,7 +152,7 @@ public class TMIClient implements ConnectionListener {
     }
 
     @IrcHandler(IrcCode.Mode)
-    public void handleMode(final Message message) {
+    public void handleMode(final IrcMessage message) {
         String mode = message.getArg(1);
 
         switch (mode) {
@@ -136,20 +171,23 @@ public class TMIClient implements ConnectionListener {
     }
 
     @IrcHandler(IrcCode.Ping)
-    public void handlePing(final Message message) {
+    public void handlePing(final IrcMessage message) {
         sendRaw("PONG");
     }
 
     @IrcHandler(IrcCode.Unknown)
     public void handleOther(final Message message) {
         IrcCode type = message.getType();
-        System.out.println(type + ": " + message);
+        System.out.println(type.name() + ": " + message);
     }
 
     @Override
     public void onMessageReceived(final String line) {
-        Message message = Message.parse(line);
+        IrcMessage message = IrcMessage.parse(line);
+        processMessage(message);
+    }
 
+    private void processMessage(final Message message) {
         IrcCode type = message.getType();
         Method method = codeHandlers.get(type);
         if (method != null) {
@@ -176,7 +214,7 @@ public class TMIClient implements ConnectionListener {
     }
 
     public void sendMessage(final String line) {
-        send("PRIVMSG", '#' + this.channelName, line);
+        send("PRIVMSG", getIrcChannelName(), line);
     }
 
 }

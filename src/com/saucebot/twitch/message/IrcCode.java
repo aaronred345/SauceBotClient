@@ -1,4 +1,4 @@
-package com.saucebot.twitch;
+package com.saucebot.twitch.message;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,50 +82,50 @@ public enum IrcCode {
     Users("393"),
     Endofusers("394"),
     Nousers("395"),
-    Nosuchnick("401", true),
-    Nosuchserver("402", true),
-    Nosuchchannel("403", true),
-    Cannotsendtochan("404", true),
-    Toomanychannels("405", true),
-    Wasnosuchnick("406", true),
-    Toomanytargets("407", true),
-    Noorigin("409", true),
-    Norecipient("411", true),
-    Notexttosend("412", true),
-    Notoplevel("413", true),
-    Wildtoplevel("414", true),
-    Unknowncommand("421", true),
-    Nomotd("422", true),
-    Noadmininfo("423", true),
-    Fileerror("424", true),
-    Nonicknamegiven("431", true),
-    Erroneusnickname("432", true),
-    Nicknameinuse("433", true),
-    Nickcollision("436", true),
-    Usernotinchannel("441", true),
-    Notonchannel("442", true),
-    Useronchannel("443", true),
-    Nologin("444", true),
-    Summondisabled("445", true),
-    Usersdisabled("446", true),
-    Notregistered("451", true),
-    Needmoreparams("461", true),
-    Alreadyregistred("462", true),
-    Nopermforhost("463", true),
-    Passwdmismatch("464", true),
-    Yourebannedcreep("465", true),
-    Keyset("467", true),
-    Channelisfull("471", true),
-    Unknownmode("472", true),
-    Inviteonlychan("473", true),
-    Bannedfromchan("474", true),
-    Badchannelkey("475", true),
-    Noprivileges("481", true),
-    Chanoprivsneeded("482", true),
-    Cantkillserver("483", true),
-    Nooperhost("491", true),
-    Umodeunknownflag("501", true),
-    Usersdontmatch("502", true),
+    Nosuchnick("401", IrcCodeType.Error),
+    Nosuchserver("402", IrcCodeType.Error),
+    Nosuchchannel("403", IrcCodeType.Error),
+    Cannotsendtochan("404", IrcCodeType.Error),
+    Toomanychannels("405", IrcCodeType.Error),
+    Wasnosuchnick("406", IrcCodeType.Error),
+    Toomanytargets("407", IrcCodeType.Error),
+    Noorigin("409", IrcCodeType.Error),
+    Norecipient("411", IrcCodeType.Error),
+    Notexttosend("412", IrcCodeType.Error),
+    Notoplevel("413", IrcCodeType.Error),
+    Wildtoplevel("414", IrcCodeType.Error),
+    Unknowncommand("421", IrcCodeType.Error),
+    Nomotd("422", IrcCodeType.Error),
+    Noadmininfo("423", IrcCodeType.Error),
+    Fileerror("424", IrcCodeType.Error),
+    Nonicknamegiven("431", IrcCodeType.Error),
+    Erroneusnickname("432", IrcCodeType.Error),
+    Nicknameinuse("433", IrcCodeType.Error),
+    Nickcollision("436", IrcCodeType.Error),
+    Usernotinchannel("441", IrcCodeType.Error),
+    Notonchannel("442", IrcCodeType.Error),
+    Useronchannel("443", IrcCodeType.Error),
+    Nologin("444", IrcCodeType.Error),
+    Summondisabled("445", IrcCodeType.Error),
+    Usersdisabled("446", IrcCodeType.Error),
+    Notregistered("451", IrcCodeType.Error),
+    Needmoreparams("461", IrcCodeType.Error),
+    Alreadyregistred("462", IrcCodeType.Error),
+    Nopermforhost("463", IrcCodeType.Error),
+    Passwdmismatch("464", IrcCodeType.Error),
+    Yourebannedcreep("465", IrcCodeType.Error),
+    Keyset("467", IrcCodeType.Error),
+    Channelisfull("471", IrcCodeType.Error),
+    Unknownmode("472", IrcCodeType.Error),
+    Inviteonlychan("473", IrcCodeType.Error),
+    Bannedfromchan("474", IrcCodeType.Error),
+    Badchannelkey("475", IrcCodeType.Error),
+    Noprivileges("481", IrcCodeType.Error),
+    Chanoprivsneeded("482", IrcCodeType.Error),
+    Cantkillserver("483", IrcCodeType.Error),
+    Nooperhost("491", IrcCodeType.Error),
+    Umodeunknownflag("501", IrcCodeType.Error),
+    Usersdontmatch("502", IrcCodeType.Error),
     Connected("001"),
     Hostinfo("002"),
     Serverinfo("003"),
@@ -138,19 +138,25 @@ public enum IrcCode {
     Part("PART"),
     Ping("PING"),
 
+    // System codes from "jtv" private messages
+    Usercolor("USERCOLOR", IrcCodeType.System),
+    Specialuser("SPECIALUSER", IrcCodeType.System),
+    Emoteset("EMOTESET", IrcCodeType.System),
+    Historyend("HISTORYEND", IrcCodeType.System),
+    Clearchat("CLEARCHAT", IrcCodeType.System),
+
     Unknown("000");
 
     private final String code;
-
-    private final boolean isError;
+    private final IrcCodeType type;
 
     IrcCode(final String code) {
-        this(code, false);
+        this(code, IrcCodeType.Normal);
     }
 
-    IrcCode(final String code, final boolean isError) {
+    IrcCode(final String code, final IrcCodeType type) {
         this.code = code;
-        this.isError = isError;
+        this.type = type;
     }
 
     public String code() {
@@ -158,7 +164,11 @@ public enum IrcCode {
     }
 
     public boolean isError() {
-        return isError;
+        return type == IrcCodeType.Error;
+    }
+
+    public boolean isSystem() {
+        return type == IrcCodeType.System;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.saucebot.test;
 
-import com.saucebot.twitch.Message;
+import com.saucebot.twitch.message.IrcMessage;
 import com.saucebot.util.IRCUtils;
 
 public class BenchmarkTest {
@@ -26,8 +26,10 @@ public class BenchmarkTest {
         int n = 100_000;
         long start = System.currentTimeMillis();
         for (int i = 0; i < n / 2; i++) {
-            Message.parse(":ravn_tm.tmi.twitch.tv 352 ravn_tm #ravn ravn ravn_tm.tmi.twitch.tv tmi.twitch.tv ravn H :0 ravn");
-            Message.parse(":rravn_tm.tmi.twitch.tv 352 ravn_tm #ravn ravn ravn_tm.tmi.twitch.tv tmi.twitch.tv ravn H :0 ravn");
+            IrcMessage
+                    .parse(":ravn_tm.tmi.twitch.tv 352 ravn_tm #ravn ravn ravn_tm.tmi.twitch.tv tmi.twitch.tv ravn H :0 ravn");
+            IrcMessage
+                    .parse(":rravn_tm.tmi.twitch.tv 352 ravn_tm #ravn ravn ravn_tm.tmi.twitch.tv tmi.twitch.tv ravn H :0 ravn");
         }
         long end = System.currentTimeMillis();
 
