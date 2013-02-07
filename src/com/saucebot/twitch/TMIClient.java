@@ -25,6 +25,7 @@ public class TMIClient implements ConnectionListener {
         ops = new HashSet<User>();
 
         connection = new Connection(Twitch.getAddressForChannel(channelName), Twitch.CHAT_PORT);
+        connection.setConnectionListener(this);
     }
 
     public String getChannelName() {
@@ -51,7 +52,13 @@ public class TMIClient implements ConnectionListener {
 
     @Override
     public void onMessageReceived(final String line) {
-
+        Message message = Message.parse(line);
+        switch (message.getType()) {
+        case Privmsg:
+            String channel = message.getArg(1);
+            String text = message.getArg(2);
+            System.out.println(channel + ": " + text);
+        }
     }
 
 }

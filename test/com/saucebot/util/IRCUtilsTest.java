@@ -30,7 +30,7 @@ public class IRCUtilsTest {
         arrayEquals(IRCUtils.parse("a #b c"), "a", "#b", "c");
         arrayEquals(IRCUtils.parse("   a #b c asdfasd_ASDFAsdf    "), "a", "#b", "c", "asdfasd_ASDFAsdf");
         arrayEquals(IRCUtils.parse("PRIVMSG #ravn ravn@ravn Hello"), "PRIVMSG", "#ravn", "ravn@ravn", "Hello");
-        arrayEquals(IRCUtils.parse("PRIVMSG   #ravn :Hello   world!"), "PRIVMSG", "#ravn", "Hello   world!");
+        arrayEquals(IRCUtils.parse("PRIVMSG #ravn :Hello   world!"), "PRIVMSG", "#ravn", "Hello   world!");
         arrayEquals(IRCUtils.parse("PRIVMSG #ravn :Hello world:!"), "PRIVMSG", "#ravn", "Hello world:!");
         arrayEquals(IRCUtils.parse("A B C :"), "A", "B", "C", "");
         arrayEquals(IRCUtils.parse("A B C ::"), "A", "B", "C", ":");

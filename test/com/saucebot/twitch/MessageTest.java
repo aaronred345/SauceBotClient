@@ -15,11 +15,6 @@ public class MessageTest {
     }
 
     @Test
-    public void testPrivmsg() {
-
-    }
-
-    @Test
     public void testWhoResponse() {
         String line = ":ravn_tm.tmi.twitch.tv 352 ravn_tm #ravn ravn ravn_tm.tmi.twitch.tv tmi.twitch.tv ravn H :0 ravn";
         Message message = Message.parse(line);
@@ -31,6 +26,19 @@ public class MessageTest {
         assertEquals(line, message.getRawLine());
         assertArrayEquals(new String[] { "ravn_tm", "#ravn", "ravn", "ravn_tm.tmi.twitch.tv", "tmi.twitch.tv", "ravn",
                 "H", "0 ravn" }, message.getArgs());
+    }
+
+    @Test
+    public void testChannelMessage() {
+        String line = ":ravn_tm!ravn_tm@ravn_tm.tmi.twitch.tv PRIVMSG #ravn :hello world!";
+        Message message = Message.parse(line);
+
+        assertEquals(2, message.getNumArgs());
+        assertEquals("#ravn", message.getArg(0));
+        assertEquals("hello world!", message.getArg(1));
+        assertEquals(IrcCode.Privmsg, message.getType());
+        assertEquals("ravn_tm!ravn_tm@ravn_tm.tmi.twitch.tv", message.getSender());
+        assertEquals("ravn_tm", message.getUser());
     }
 
     @Test
@@ -54,6 +62,6 @@ public class MessageTest {
         assertEquals("PING", message.getCommand());
         assertEquals(IrcCode.Ping, message.getType());
         assertEquals(1, message.getNumArgs());
-        assertEquals(new String[] { "tmi.twitch.tv" }, message.getArgs());
+        assertArrayEquals(new String[] { "tmi.twitch.tv" }, message.getArgs());
     }
 }

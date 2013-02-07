@@ -7,6 +7,7 @@ public class Message {
     private static final Message NullMessage = new Message(null, "", IrcCode.Unknown, "", new String[0]);
 
     private final String sender;
+    private final String user;
     private final String command;
     private final IrcCode type;
     private final String raw;
@@ -19,10 +20,25 @@ public class Message {
         this.type = type;
         this.raw = raw;
         this.arguments = arguments;
+
+        if (sender != null) {
+            int idx = sender.indexOf('!');
+            if (idx > -1) {
+                this.user = sender.substring(0, idx);
+            } else {
+                this.user = sender;
+            }
+        } else {
+            this.user = null;
+        }
     }
 
     public String getSender() {
         return sender;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     public IrcCode getType() {
