@@ -27,6 +27,8 @@ public class TMIClient implements ConnectionListener {
 
     private Map<IrcCode, Method> codeHandlers;
 
+    private TMIListener listener;
+
     public TMIClient(final String channelName, final String accountName, final String accountPassword) {
         this.channelName = channelName;
         this.accountName = accountName;
@@ -53,6 +55,10 @@ public class TMIClient implements ConnectionListener {
             }
         }
 
+    }
+
+    public void setTMIListener(final TMIListener listener) {
+        this.listener = listener;
     }
 
     public void close() {
@@ -94,12 +100,11 @@ public class TMIClient implements ConnectionListener {
         send("PASS", this.accountPassword);
         send("NICK", name);
         send("USER", name, 8, '*', name);
-
     }
 
     @Override
     public void onDisconnected() {
-
+        listener.onPart();
     }
 
     @IrcHandler(IrcCode.Endofmotd)
@@ -109,6 +114,8 @@ public class TMIClient implements ConnectionListener {
         send("JOIN", chan);
         send("JTVROOMS", chan);
         send("JTVCLIENT", chan);
+
+        listener.onJoin();
     }
 
     @IrcHandler(IrcCode.Privmsg)
@@ -125,7 +132,7 @@ public class TMIClient implements ConnectionListener {
             username = '@' + username;
         }
 
-        System.out.printf("%s %s <%s> %s\n", channel, user.getColor(), username, text);
+        listener.onMessage(user, isOp(user), text);
     }
 
     private void handleSystemMessage(final String line) {
@@ -133,7 +140,7 @@ public class TMIClient implements ConnectionListener {
         if (message.getType().isSystem()) {
             processMessage(message);
         } else {
-            System.out.println("PM: " + message);
+            listener.onPrivateMessage(line);
         }
     }
 
