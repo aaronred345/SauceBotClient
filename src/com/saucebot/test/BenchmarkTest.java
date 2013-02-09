@@ -1,16 +1,49 @@
 package com.saucebot.test;
 
+import com.saucebot.client.emit.Emit;
+import com.saucebot.client.emit.EmitType;
+import com.saucebot.client.emit.EmitUtils;
 import com.saucebot.twitch.message.IrcMessage;
 import com.saucebot.util.IRCUtils;
 
 public class BenchmarkTest {
 
     public static void main(final String[] args) {
-        checkParse();
-        checkFormat();
+        checkIrcParse();
+        checkIrcFormat();
+
+        checkJsonParse();
+        checkJsonFormat();
     }
 
-    private static void checkFormat() {
+    private static void checkJsonFormat() {
+        int n = 100_000;
+        long start = System.currentTimeMillis();
+        Emit emit = new Emit(EmitType.TIMEOUT);
+        emit.put("a", "123");
+        emit.put("b", "456");
+        emit.put("c", "12312");
+
+        for (int i = 0; i < n; i++) {
+            EmitUtils.serialize(emit);
+        }
+        long end = System.currentTimeMillis();
+
+        System.out.println((end - start) / (n * 1.0) + "ms/jsonformat");
+    }
+
+    private static void checkJsonParse() {
+        int n = 100_000;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            Emit emit = EmitUtils.parse("{\"cmd\":\"msg\",\"data\":{\"a\":1,\"b\":2,\"c\":\"asdf\"}}");
+        }
+        long end = System.currentTimeMillis();
+
+        System.out.println((end - start) / (n * 1.0) + "ms/jsonparse");
+    }
+
+    private static void checkIrcFormat() {
         int n = 100_000;
         long start = System.currentTimeMillis();
         for (int i = 0; i < n / 2; i++) {
@@ -22,7 +55,7 @@ public class BenchmarkTest {
         System.out.println((end - start) / (n * 1.0) + "ms/format");
     }
 
-    private static void checkParse() {
+    private static void checkIrcParse() {
         int n = 100_000;
         long start = System.currentTimeMillis();
         for (int i = 0; i < n / 2; i++) {

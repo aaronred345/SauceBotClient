@@ -29,11 +29,9 @@ public class AutoSocket implements Runnable {
         this.listener = listener;
 
         connectionRetryer = new Retryer(500L, 60 * 1000, 1.5);
-
-        startAutoSocket();
     }
 
-    private void startAutoSocket() {
+    public void open() {
         running = true;
         new Thread(this).start();
     }

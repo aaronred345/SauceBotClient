@@ -2,6 +2,7 @@ package com.saucebot.twitch;
 
 import com.saucebot.client.Channel;
 import com.saucebot.client.bot.BotAccount;
+import com.saucebot.twitch.message.BotMessage;
 
 public class TwitchBot implements TMIListener {
 
@@ -10,12 +11,16 @@ public class TwitchBot implements TMIListener {
 
     private TMIClient client;
 
+    private TimedMessageQueue messageQueue;
+
     public TwitchBot(final Channel channel) {
         this.channel = channel;
         this.account = channel.getBot();
 
         client = new TMIClient(channel.getIdentifier(), account.getUsername(), account.getPassword());
         client.setTMIListener(this);
+
+        messageQueue = new TimedMessageQueue(10, 3000L);
     }
 
     public void close() {
@@ -56,6 +61,10 @@ public class TwitchBot implements TMIListener {
 
     public void sendMessage(final String message) {
         client.sendMessage(message);
+    }
+
+    public void send(final BotMessage message) {
+        messageQueue.add(message);
     }
 
     @Override

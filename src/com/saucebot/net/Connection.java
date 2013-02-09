@@ -27,6 +27,7 @@ public class Connection implements SocketListener {
 
     public void connect() {
         socket = new AutoSocket(host, port, this);
+        socket.open();
     }
 
     public void close() {
