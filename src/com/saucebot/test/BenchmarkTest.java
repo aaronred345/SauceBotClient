@@ -36,7 +36,7 @@ public class BenchmarkTest {
         int n = 100_000;
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            Emit emit = EmitUtils.parse("{\"cmd\":\"msg\",\"data\":{\"a\":1,\"b\":2,\"c\":\"asdf\"}}");
+            EmitUtils.parse("{\"cmd\":\"msg\",\"data\":{\"a\":1,\"b\":2,\"c\":\"asdf\"}}");
         }
         long end = System.currentTimeMillis();
 

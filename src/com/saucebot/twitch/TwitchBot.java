@@ -11,7 +11,7 @@ public class TwitchBot implements TMIListener {
 
     private TMIClient client;
 
-    private TimedMessageQueue messageQueue;
+    private TimedPriorityQueue<BotMessage> messageQueue;
 
     public TwitchBot(final Channel channel) {
         this.channel = channel;
@@ -20,7 +20,7 @@ public class TwitchBot implements TMIListener {
         client = new TMIClient(channel.getIdentifier(), account.getUsername(), account.getPassword());
         client.setTMIListener(this);
 
-        messageQueue = new TimedMessageQueue(10, 3000L);
+        messageQueue = new TimedPriorityQueue<BotMessage>(10, 3000L);
     }
 
     public void close() {

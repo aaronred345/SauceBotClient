@@ -58,7 +58,7 @@ public class FixedSizePriorityQueue<T extends Comparable<? super T>> extends Tre
 
     @Override
     public String toString() {
-        return "MessageQueue[" + Arrays.toString(toArray()) + "]";
+        return "FixedSizePriorityQueue[" + Arrays.toString(toArray()) + "]";
     }
 
 }
