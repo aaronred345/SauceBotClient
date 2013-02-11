@@ -20,7 +20,7 @@ public class TimedPriorityQueue<T extends Comparable<? super T>> implements Iter
         queue = new FixedSizePriorityQueue<T>(size);
     }
 
-    public void add(final T message) {
+    public synchronized void add(final T message) {
         if (!isValueCached(message)) {
             queue.add(message);
         }
@@ -31,12 +31,12 @@ public class TimedPriorityQueue<T extends Comparable<? super T>> implements Iter
     }
 
     @Override
-    public boolean hasNext() {
+    public synchronized boolean hasNext() {
         return queue.hasNext() && lastMessageTime + delay < System.currentTimeMillis();
     }
 
     @Override
-    public T next() {
+    public synchronized T next() {
         lastMessageTime = System.currentTimeMillis();
         lastMessage = queue.next();
         return lastMessage;
