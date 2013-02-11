@@ -166,7 +166,7 @@ public class TMIClient implements ConnectionListener {
     public void handleJoin(final IrcMessage message) {
         String user = message.getUser();
         if (user.equalsIgnoreCase(this.accountName)) {
-            send("WHO", '#' + this.channelName);
+            send("WHO", getIrcChannelName());
         }
     }
 
