@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class NoiseGenerator {
 
-    private static final char[] noise = ",-_!><#'ดจ?~^+\"".toCharArray();
+    private static final char[] noise = ",-_!><#'?~^+\"".toCharArray();
 
     private static final int noiseCount = noise.length;
 

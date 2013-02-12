@@ -1,5 +1,6 @@
 package com.saucebot.client.emit;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -28,10 +29,24 @@ public class Emit implements DataObject {
         return cmd;
     }
 
+    @Override
     public String get(final String key) {
         return data.getAsJsonObject().get(key).getAsString();
     }
 
+    public JsonElement getElement(final String key) {
+        return data.getAsJsonObject().get(key);
+    }
+
+    public boolean hasElement(final String key) {
+        return data.getAsJsonObject().has(key);
+    }
+
+    public JsonArray asArray() {
+        return data.getAsJsonArray();
+    }
+
+    @Override
     public void put(final String key, final String value) {
         data.getAsJsonObject().add(key, new JsonPrimitive(value));
     }

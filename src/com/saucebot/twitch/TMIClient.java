@@ -99,12 +99,11 @@ public class TMIClient implements ConnectionListener {
 
         send("PASS", this.accountPassword);
         send("NICK", name);
-        send("USER", name, 8, '*', name);
     }
 
     @Override
     public void onDisconnected() {
-        listener.onPart();
+        listener.onPart(this);
     }
 
     @IrcHandler(IrcCode.Endofmotd)
@@ -115,7 +114,7 @@ public class TMIClient implements ConnectionListener {
         send("JTVROOMS", chan);
         send("JTVCLIENT", chan);
 
-        listener.onJoin();
+        listener.onJoin(this);
     }
 
     @IrcHandler(IrcCode.Privmsg)
@@ -132,7 +131,7 @@ public class TMIClient implements ConnectionListener {
             username = '@' + username;
         }
 
-        listener.onMessage(user, isOp(user), text);
+        listener.onMessage(this, user, isOp(user), text);
     }
 
     private void handleSystemMessage(final String line) {
@@ -140,7 +139,7 @@ public class TMIClient implements ConnectionListener {
         if (message.getType().isSystem()) {
             processMessage(message);
         } else {
-            listener.onPrivateMessage(line);
+            listener.onPrivateMessage(this, line);
         }
     }
 

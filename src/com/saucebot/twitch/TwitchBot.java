@@ -7,7 +7,7 @@ import com.saucebot.twitch.message.Priority;
 import com.saucebot.util.IteratorListener;
 import com.saucebot.util.IteratorPoller;
 
-public class TwitchBot implements TMIListener, IteratorListener<BotMessage> {
+public class TwitchBot implements IteratorListener<BotMessage> {
 
     private Channel channel;
     private BotAccount account;
@@ -17,12 +17,12 @@ public class TwitchBot implements TMIListener, IteratorListener<BotMessage> {
     private TimedPriorityQueue<BotMessage> messageQueue;
     private IteratorPoller<BotMessage> botMessageListener;
 
-    public TwitchBot(final Channel channel) {
+    public TwitchBot(final Channel channel, final TMIListener listener) {
         this.channel = channel;
         this.account = channel.getBot();
 
         client = new TMIClient(channel.getIdentifier(), account.getUsername(), account.getPassword());
-        client.setTMIListener(this);
+        client.setTMIListener(listener);
 
         messageQueue = new TimedPriorityQueue<BotMessage>(10, 3000L);
         botMessageListener = new IteratorPoller<>(messageQueue, this, 2000L);
@@ -51,31 +51,6 @@ public class TwitchBot implements TMIListener, IteratorListener<BotMessage> {
         }
 
         client.sendMessage(message);
-    }
-
-    @Override
-    public void onPrivateMessage(final String message) {
-        System.out.printf("[PM/#%s] %s\n", channel.getName(), message);
-    }
-
-    @Override
-    public void onMessage(final User user, final boolean isOp, final String text) {
-        String name = user.getUsername();
-        if (isOp) {
-            name = "@" + name;
-        }
-
-        System.out.printf("[#%s] <%s> %s\n", channel.getName(), name, text);
-    }
-
-    @Override
-    public void onJoin() {
-        System.out.println("*** Joined " + channel.getName() + " ***");
-    }
-
-    @Override
-    public void onPart() {
-        System.out.println("*** Left " + channel.getName() + " ***");
     }
 
     public void sendMessage(final String message) {

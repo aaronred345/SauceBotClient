@@ -50,6 +50,9 @@ public class ConfigBotAccountManager implements BotAccountManager {
 
     private void addBotAccount(final String username, final String password) {
         BotAccount botAccount = new BotAccount(username, password);
+        if (!hasDefaultAccount()) {
+            setDefaultAccount(botAccount);
+        }
         botAccounts.put(username.toLowerCase(), botAccount);
     }
 

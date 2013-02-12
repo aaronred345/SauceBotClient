@@ -1,14 +1,13 @@
 package com.saucebot.twitch;
 
-
 public interface TMIListener {
 
-    public void onPrivateMessage(String message);
+    public void onPrivateMessage(TMIClient source, String message);
 
-    public void onMessage(User user, boolean isOp, String text);
+    public void onMessage(TMIClient source, User user, boolean isOp, String text);
 
-    public void onJoin();
+    public void onJoin(TMIClient source);
 
-    public void onPart();
+    public void onPart(TMIClient source);
 
 }

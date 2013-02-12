@@ -9,16 +9,23 @@ import com.saucebot.client.bot.BotAccountManager;
 import com.saucebot.client.bot.ConfigBotAccountManager;
 import com.saucebot.client.emit.Emit;
 import com.saucebot.client.emit.EmitHandler;
+import com.saucebot.client.emit.EmitParser;
 import com.saucebot.client.emit.EmitType;
 import com.saucebot.config.ConfigObject;
 import com.saucebot.config.JSONConfigParser;
+import com.saucebot.twitch.TMIClient;
+import com.saucebot.twitch.TMIListener;
+import com.saucebot.twitch.Twitch;
 import com.saucebot.twitch.TwitchBot;
+import com.saucebot.twitch.User;
 import com.saucebot.twitch.message.BotMessage;
 
-public class SauceManager implements ChannelListListener, SauceListener {
+public class SauceManager implements ChannelListListener, SauceListener, TMIListener {
 
     private final BotAccountManager accountManager;
     private final ChannelManager channelManager;
+
+    private final EmitParser emitParser;
 
     private Map<Channel, TwitchBot> bots;
 
@@ -28,8 +35,9 @@ public class SauceManager implements ChannelListListener, SauceListener {
         JSONConfigParser parser = new JSONConfigParser();
         ConfigObject configurations = parser.parse(configPath);
 
-        accountManager = new ConfigBotAccountManager(configurations);
+        accountManager = new ConfigBotAccountManager(configurations.get("accounts"));
         channelManager = new ChannelManager();
+        emitParser = new EmitParser(accountManager, channelManager);
 
         bots = new HashMap<Channel, TwitchBot>();
 
@@ -45,34 +53,43 @@ public class SauceManager implements ChannelListListener, SauceListener {
 
         saucebot = new SauceConnection(host, port);
         saucebot.registerHandlers(this);
+        saucebot.connect();
     }
 
     @EmitHandler(EmitType.CHANNELS)
     public void onChannels(final Emit emit) {
-        System.out.println("CHANNELS: " + emit);
+        emitParser.parseChannelEmit(emit);
+
     }
 
     @EmitHandler(EmitType.SAY)
     public void onSay(final Emit emit) {
-        String chan = emit.get("chan");
-        String msg = emit.get("msg");
-        BotMessage message = new BotMessage(msg);
-        sendToChannel(chan, message);
+        BotMessage message = emitParser.parseSayEmit(emit);
+        sendMessageToEmitChannel(message, emit);
     }
 
     @EmitHandler(EmitType.UNBAN)
     public void onUnban(final Emit emit) {
-        System.out.println("UNBAN: " + emit);
+        BotMessage message = emitParser.parseUnbanEmit(emit);
+        sendMessageToEmitChannel(message, emit);
     }
 
     @EmitHandler(EmitType.BAN)
     public void onBan(final Emit emit) {
-        System.out.println("BAN: " + emit);
+        BotMessage message = emitParser.parseBanEmit(emit);
+        sendMessageToEmitChannel(message, emit);
     }
 
     @EmitHandler(EmitType.TIMEOUT)
     public void onTimeout(final Emit emit) {
-        System.out.println("TIMEOUT: " + emit);
+        BotMessage message = emitParser.parseTimeoutEmit(emit);
+        sendMessageToEmitChannel(message, emit);
+    }
+
+    @EmitHandler(EmitType.ERROR)
+    public void onError(final Emit emit) {
+        String message = emit.get("msg");
+        System.err.println("[Error] " + message);
     }
 
     @Override
@@ -104,6 +121,11 @@ public class SauceManager implements ChannelListListener, SauceListener {
         channelManager.remove(channelName);
     }
 
+    private void sendMessageToEmitChannel(final BotMessage message, final Emit emit) {
+        String channelName = emit.get("chan");
+        sendToChannel(channelName, message);
+    }
+
     private void sendToChannel(final String channelName, final BotMessage message) {
         Channel channel = channelManager.get(channelName);
         TwitchBot bot = bots.get(channel);
@@ -119,6 +141,42 @@ public class SauceManager implements ChannelListListener, SauceListener {
         }
     }
 
+    /* TMI Listener */
+
+    @Override
+    public void onPrivateMessage(final TMIClient source, final String message) {
+        System.out.printf("[%s] %s\n", source.getChannelName(), message);
+
+        Emit emit = new Emit(EmitType.PRIVATE_MESSAGE);
+        emit.put("user", Twitch.SYSTEM_MESSAGE_USER);
+        emit.put("msg", message);
+        saucebot.write(emit);
+    }
+
+    @Override
+    public void onMessage(final TMIClient source, final User user, final boolean isOp, final String text) {
+        System.out.printf("[%s] <%c%s> %s\n", source.getChannelName(), isOp ? '@' : ' ', user.getUsername(), text);
+
+        Emit emit = new Emit(EmitType.MESSAGE);
+        emit.put("op", isOp ? "1" : "0");
+        emit.put("user", user.getUsername());
+        emit.put("msg", text);
+        emit.put("chan", source.getChannelName());
+        saucebot.write(emit);
+    }
+
+    @Override
+    public void onJoin(final TMIClient source) {
+        System.out.println("*** JOINED " + source.getChannelName());
+    }
+
+    @Override
+    public void onPart(final TMIClient source) {
+        System.out.println("*** LEFT " + source.getChannelName());
+    }
+
+    /* ChannelListener */
+
     @Override
     public void channelAdded(final Channel channel) {
         TwitchBot bot = bots.get(channel);
@@ -126,7 +184,8 @@ public class SauceManager implements ChannelListListener, SauceListener {
             channelRemoved(channel);
         }
 
-        bot = new TwitchBot(channel);
+        bot = new TwitchBot(channel, this);
+        bots.put(channel, bot);
     }
 
     @Override
