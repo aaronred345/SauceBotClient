@@ -127,10 +127,6 @@ public class TMIClient implements ConnectionListener {
         }
 
         User user = Users.get(username);
-        if (isOp(user)) {
-            username = '@' + username;
-        }
-
         listener.onMessage(this, user, isOp(user), text);
     }
 
