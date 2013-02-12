@@ -50,6 +50,8 @@ public class TwitchBot implements IteratorListener<BotMessage> {
             message = NoiseGenerator.next() + " " + message;
         }
 
+        System.out.printf("[%s] <*%s> %s\n", channel.getName(), account.getUsername(), message);
+
         client.sendMessage(message);
     }
 
