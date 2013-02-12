@@ -40,8 +40,8 @@ public class TMIClient implements ConnectionListener {
 
         connection = new Connection(Twitch.getAddressForChannel(channelName), Twitch.CHAT_PORT);
         connection.setConnectionListener(this);
-        connection.setInactivityTimeLimit(45 * 60 * 1000);
         connection.connect();
+        connection.setInactivityTimeLimit(45 * 60 * 1000);
     }
 
     private void setupHandlers() {
