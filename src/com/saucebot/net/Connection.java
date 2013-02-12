@@ -30,10 +30,18 @@ public class Connection implements SocketListener {
         socket.open();
     }
 
+    public void requestReconnect() {
+        socket.requestReconnect();
+    }
+
     public void close() {
         if (socket != null) {
             socket.close();
         }
+    }
+
+    public void setInactivityTimeLimit(final long inactivityTimeLimit) {
+        socket.setInactivityTimeLimit(inactivityTimeLimit);
     }
 
     @Override
@@ -52,7 +60,6 @@ public class Connection implements SocketListener {
     }
 
     public void send(final String message) {
-        System.out.print(">>> " + message);
         socket.write(message);
     }
 
