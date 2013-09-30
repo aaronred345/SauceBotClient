@@ -1,7 +1,7 @@
 SauceBotClient
 ==============
 
-**SauceBot Client for Twitch Messaging Interface(TMI)**
+*SauceBot Client for Twitch Messaging Interface(TMI)*
 
 Dependencies
 ------------
